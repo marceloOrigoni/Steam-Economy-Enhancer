@@ -1,11 +1,11 @@
 // ==UserScript==
 // @name        Steam Economy Enhancer
 // @icon        https://upload.wikimedia.org/wikipedia/commons/8/83/Steam_icon_logo.svg
-// @namespace   https://github.com/Nuklon
-// @author      Nuklon
+// @namespace   https://github.com/marceloOrigoni
+// @author      marceloOrigoni
 // @license     MIT
-// @version     6.9.0
-// @description Enhances the Steam Inventory and Steam Market.
+// @version     7.0.0
+// @description Enhances the Steam Inventory and Steam Market. Forked from Nuklon version
 // @include     *://steamcommunity.com/id/*/inventory*
 // @include     *://steamcommunity.com/profiles/*/inventory*
 // @include     *://steamcommunity.com/market*
@@ -20,10 +20,10 @@
 // @require     https://cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.js
 // @require     https://raw.githubusercontent.com/rmariuzzo/checkboxes.js/91bec667e9172ceb063df1ecb7505e8ed0bae9ba/src/jquery.checkboxes.js
 // @grant       unsafeWindow
-// @homepageURL https://github.com/Nuklon/Steam-Economy-Enhancer
-// @supportURL  https://github.com/Nuklon/Steam-Economy-Enhancer/issues
-// @downloadURL https://raw.githubusercontent.com/Nuklon/Steam-Economy-Enhancer/master/code.user.js
-// @updateURL   https://raw.githubusercontent.com/Nuklon/Steam-Economy-Enhancer/master/code.user.js
+// @homepageURL https://github.com/marceloOrigoni/Steam-Economy-Enhancer
+// @supportURL  https://github.com/marceloOrigoni/Steam-Economy-Enhancer/issues
+// @downloadURL https://raw.githubusercontent.com/marceloOrigoni/Steam-Economy-Enhancer/master/code.user.js
+// @updateURL   https://raw.githubusercontent.com/marceloOrigoni/Steam-Economy-Enhancer/master/code.user.js
 // ==/UserScript==
 // jQuery is already added by Steam, force no conflict mode.
 (function($, async) {
@@ -109,6 +109,7 @@
     const SETTING_MIN_MISC_PRICE = 'SETTING_MIN_MISC_PRICE';
     const SETTING_MAX_MISC_PRICE = 'SETTING_MAX_MISC_PRICE';
     const SETTING_PRICE_OFFSET = 'SETTING_PRICE_OFFSET';
+    const SETTING_PRICE_OFFSET_MODE = 'SETTING_PRICE_OFFSET_MODE';
     const SETTING_PRICE_MIN_CHECK_PRICE = 'SETTING_PRICE_MIN_CHECK_PRICE';
     const SETTING_PRICE_ALGORITHM = 'SETTING_PRICE_ALGORITHM';
     const SETTING_PRICE_IGNORE_LOWEST_Q = 'SETTING_PRICE_IGNORE_LOWEST_Q';
@@ -128,6 +129,7 @@
         SETTING_MIN_MISC_PRICE: 0.05,
         SETTING_MAX_MISC_PRICE: 10,
         SETTING_PRICE_OFFSET: 0.00,
+        SETTING_PRICE_OFFSET_MODE: 1,
         SETTING_PRICE_MIN_CHECK_PRICE: 0.00,
         SETTING_PRICE_ALGORITHM: 1,
         SETTING_PRICE_IGNORE_LOWEST_Q: 1,
@@ -358,7 +360,11 @@
 
         // Apply the offset to the calculated price, but only if the price wasn't changed to the max (as otherwise it's impossible to list for this price).
         if (!changedToMax && applyOffset) {
-            calculatedPrice = calculatedPrice + (getSettingWithDefault(SETTING_PRICE_OFFSET) * 100);
+            if(getSettingWithDefault(SETTING_PRICE_OFFSET_MODE) === 1){
+                calculatedPrice = calculatedPrice + (getSettingWithDefault(SETTING_PRICE_OFFSET) * 100);
+            }else{
+                calculatedPrice = calculatedPrice * (1 + getSettingWithDefault(SETTING_PRICE_OFFSET)) / 100;
+            }
         }
 
 
@@ -835,7 +841,7 @@
             previousName = name;
             name = name.replace('?', '%3F')
                 .replace('#', '%23')
-                .replace('	', '%09');
+                .replace('  ', '%09');
         }
         return name;
     }
@@ -3476,6 +3482,13 @@
             'The value to add to the calculated price (minimum and maximum are respected):&nbsp;<input class="price_option_input price_option_price" style="background-color: black;color: white;border: transparent;" type="number" step="0.01" id="' + SETTING_PRICE_OFFSET + '" value=' + getSettingWithDefault(SETTING_PRICE_OFFSET) + '>' +
             '<br/>' +
             '</div>' +
+            '<div style="margin-bottom:6px;">' +
+            'The mode to calculate the value to add to the calculated price (minimum and maximum are respected):&nbsp;<select class="price_option_input" style="background-color: black;color: white;border: transparent;" id="' + SETTING_PRICE_OFFSET_MODE + '">' +
+            '<option value="1"' + (getSettingWithDefault(SETTING_PRICE_OFFSET_MODE) == 1 ? 'selected="selected"' : '') + '>Fixed price</option>' +
+            '<option value="2" ' + (getSettingWithDefault(SETTING_PRICE_OFFSET_MODE) == 2 ? 'selected="selected"' : '') + '>Percentage</option>' +
+            '</select>' +
+            '<br/>' +
+            '</div>' +
             '<div style="margin-top:6px">' +
             'Use the second lowest sell listing when the lowest sell listing has a low quantity:&nbsp;<input class="price_option_input" style="background-color: black;color: white;border: transparent;" type="checkbox" id="' + SETTING_PRICE_IGNORE_LOWEST_Q + '" ' + (getSettingWithDefault(SETTING_PRICE_IGNORE_LOWEST_Q) == 1 ? 'checked=""' : '') + '>' +
             '<br/>' +
@@ -3524,6 +3537,7 @@
             setSetting(SETTING_MIN_MISC_PRICE, $('#' + SETTING_MIN_MISC_PRICE, price_options).val());
             setSetting(SETTING_MAX_MISC_PRICE, $('#' + SETTING_MAX_MISC_PRICE, price_options).val());
             setSetting(SETTING_PRICE_OFFSET, $('#' + SETTING_PRICE_OFFSET, price_options).val());
+            setSetting(SETTING_PRICE_OFFSET_MODE, $('#' + SETTING_PRICE_OFFSET_MODE, price_options).val());
             setSetting(SETTING_PRICE_MIN_CHECK_PRICE, $('#' + SETTING_PRICE_MIN_CHECK_PRICE, price_options).val());
             setSetting(SETTING_PRICE_ALGORITHM, $('#' + SETTING_PRICE_ALGORITHM, price_options).val());
             setSetting(SETTING_PRICE_IGNORE_LOWEST_Q, $('#' + SETTING_PRICE_IGNORE_LOWEST_Q, price_options).prop('checked') ? 1 : 0);
