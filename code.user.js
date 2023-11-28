@@ -4,7 +4,7 @@
 // @namespace   https://github.com/marceloOrigoni
 // @author      marceloOrigoni
 // @license     MIT
-// @version     7.0.0
+// @version     7.0.1
 // @description Enhances the Steam Inventory and Steam Market. Forked from Nuklon version
 // @include     *://steamcommunity.com/id/*/inventory*
 // @include     *://steamcommunity.com/profiles/*/inventory*
@@ -418,7 +418,7 @@
                 contextid: item.contextid,
                 assetid: itemId,
                 amount: 1,
-                price: price
+                price: Math.ceil(price)
             },
             success: function(data) {
                 if (data.success === false && isRetryMessage(data.message)) {
